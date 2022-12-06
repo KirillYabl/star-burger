@@ -3,6 +3,7 @@ import json
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404
 from django.templatetags.static import static
+from rest_framework import status
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 
@@ -62,8 +63,25 @@ def product_list_api(request):
         'indent': 4,
     })
 
+
 @api_view(['POST'])
 def register_order(request):
+    if 'products' not in request.data:
+        return Response(
+            {'error': '`products` key is required'},
+            status=status.HTTP_400_BAD_REQUEST
+        )
+    elif not isinstance(request.data['products'], list):
+        return Response(
+            {'error': '`products` key should be a list'},
+            status=status.HTTP_400_BAD_REQUEST
+        )
+    elif not request.data['products']:
+        return Response(
+            {'error': '`products` key should contains records'},
+            status=status.HTTP_400_BAD_REQUEST
+        )
+
     order = Order.objects.create(
         address=request.data['address'],
         first_name=request.data['firstname'],
