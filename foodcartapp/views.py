@@ -83,10 +83,10 @@ def register_order(request):
     serializer.is_valid(raise_exception=True)
 
     order = Order.objects.create(
-        address=serializer.validated_data['address'],
-        first_name=serializer.validated_data['first_name'],
-        last_name=serializer.validated_data['last_name'],
-        contact_phone=serializer.validated_data['contact_phone'],
+        address=serializer.validated_data_source['address'],
+        first_name=serializer.validated_data_source['first_name'],
+        last_name=serializer.validated_data_source['last_name'],
+        contact_phone=serializer.validated_data_source['contact_phone'],
     )
     for product in request.data['products']:
         product_obj = get_object_or_404(Product, pk=product['product'])
@@ -95,4 +95,4 @@ def register_order(request):
             quantity=product['quantity'],
             order=order
         )
-    return Response({})
+    return Response(serializer.data)
