@@ -146,6 +146,16 @@ class Order(models.Model):
         (DELIVERING, 'Доставляется'),
         (COMPLETED, 'Выполнен'),
     ]
+
+    NOT_CHOSEN = 'NOT_CHOSEN'
+    CASH = 'CASH'
+    CREDIT_CARD = 'CREDIT_CARD'
+    PAYMENT_CHOICES = [
+        (NOT_CHOSEN, 'Не выбран'),
+        (CASH, 'Налично'),
+        (CREDIT_CARD, 'Картой'),
+    ]
+
     address = models.CharField(
         'адрес',
         max_length=200,
@@ -186,6 +196,12 @@ class Order(models.Model):
         'Дата доставки',
         null=True,
         blank=True,
+    )
+    payment_type = models.CharField(
+        'способ оплаты',
+        max_length=50,
+        choices=PAYMENT_CHOICES,
+        default=NOT_CHOSEN,
     )
     objects = OrderQuerySet.as_manager()
 

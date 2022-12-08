@@ -133,6 +133,11 @@ class OrderAdmin(admin.ModelAdmin):
         'last_name',
         'contact_phone',
         'status',
+        'payment_type',
+    ]
+    list_filter = [
+        'status',
+        'payment_type',
     ]
     inlines = [
         OrderProductInline
