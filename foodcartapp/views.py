@@ -1,11 +1,6 @@
-from collections import defaultdict
-
+from django.db import transaction
 from django.http import JsonResponse
-from django.shortcuts import get_object_or_404
 from django.templatetags.static import static
-from phonenumber_field.phonenumber import PhoneNumber
-from phonenumbers import NumberParseException
-from rest_framework import status
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 
@@ -82,18 +77,19 @@ def register_order(request):
     serializer = OrderSerializer(data=request.data)
     serializer.is_valid(raise_exception=True)
 
-    order = Order.objects.create(
-        address=serializer.validated_data_source['address'],
-        first_name=serializer.validated_data_source['first_name'],
-        last_name=serializer.validated_data_source['last_name'],
-        contact_phone=serializer.validated_data_source['contact_phone'],
-    )
-
-    for product in serializer.validated_data_source['products']:
-        OrderProduct.objects.create(
-            product=product['product'],
-            quantity=product['quantity'],
-            order=order,
-            price=product['product'].price
+    with transaction.atomic():
+        order = Order.objects.create(
+            address=serializer.validated_data_source['address'],
+            first_name=serializer.validated_data_source['first_name'],
+            last_name=serializer.validated_data_source['last_name'],
+            contact_phone=serializer.validated_data_source['contact_phone'],
         )
+
+        for product in serializer.validated_data_source['products']:
+            OrderProduct.objects.create(
+                product=product['product'],
+                quantity=product['quantity'],
+                order=order,
+                price=product['product'].price
+            )
     return Response(serializer.data)
