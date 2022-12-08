@@ -92,7 +92,6 @@ def view_restaurants(request):
 
 @user_passes_test(is_manager, login_url='restaurateur:login')
 def view_orders(request):
-    print(Order.objects.first().__dict__)
     return render(request, template_name='order_items.html', context={
-        'order_items': Order.objects.price()
+        'order_items': Order.objects.price().exclude(status=Order.COMPLETED)
     })

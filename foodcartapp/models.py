@@ -128,13 +128,24 @@ class RestaurantMenuItem(models.Model):
 
 class OrderQuerySet(models.QuerySet):
     def price(self):
-        return self.prefetch_related('products'). \
-            annotate(product_price=F('products__price') * F('products__quantity')). \
-            values('pk', 'address', 'first_name', 'last_name', 'contact_phone'). \
-            annotate(price=Sum('product_price'), client_name=Concat('last_name', Value(' '), 'first_name'))
+        return self.prefetch_related('products').annotate(price=Sum(F('products__price') * F('products__quantity')))
 
 
 class Order(models.Model):
+    CREATED = 'CREATED'
+    WAITING = 'WAITING'
+    PREPARING = 'PREPARING'
+    READY = 'READY'
+    DELIVERING = 'DELIVERING'
+    COMPLETED = 'COMPLETED'
+    STATUS_CHOICES = [
+        (CREATED, 'Создан'),
+        (WAITING, 'Ожидает'),
+        (PREPARING, 'Приготовливается'),
+        (READY, 'Готов'),
+        (DELIVERING, 'Доставляется'),
+        (COMPLETED, 'Выполнен'),
+    ]
     address = models.CharField(
         'адрес',
         max_length=200,
@@ -151,6 +162,13 @@ class Order(models.Model):
         'контактный номер',
         region='RU',
     )
+    status = models.CharField(
+        'статус',
+        max_length=50,
+        choices=STATUS_CHOICES,
+        default=CREATED,
+        db_index=True,
+    )
     objects = OrderQuerySet.as_manager()
 
     @property
@@ -162,7 +180,7 @@ class Order(models.Model):
         verbose_name_plural = 'заказы'
 
     def __str__(self):
-        return f'{self.pk}, {self.last_name} {self.first_name}, {self.address}'
+        return f'{self.pk}, {self.last_name} {self.first_name}, {self.address} ({self.status})'
 
 
 class OrderProduct(models.Model):
