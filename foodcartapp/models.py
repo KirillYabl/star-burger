@@ -129,7 +129,7 @@ class RestaurantMenuItem(models.Model):
 class OrderQuerySet(models.QuerySet):
     def price(self):
         return self.prefetch_related('products'). \
-            annotate(product_price=F('products__product__price') * F('products__quantity')). \
+            annotate(product_price=F('products__price') * F('products__quantity')). \
             values('pk', 'address', 'first_name', 'last_name', 'contact_phone'). \
             annotate(price=Sum('product_price'), client_name=Concat('last_name', Value(' '), 'first_name'))
 
@@ -162,7 +162,7 @@ class Order(models.Model):
         verbose_name_plural = 'заказы'
 
     def __str__(self):
-        return f'{self.last_name} {self.first_name}, {self.address}'
+        return f'{self.pk}, {self.last_name} {self.first_name}, {self.address}'
 
 
 class OrderProduct(models.Model):
@@ -181,10 +181,16 @@ class OrderProduct(models.Model):
         related_name='products',
         on_delete=models.CASCADE,
     )
+    price = models.DecimalField(
+        'цена',
+        max_digits=8,
+        decimal_places=2,
+        validators=[MinValueValidator(0)]
+    )
 
     class Meta:
         verbose_name = 'товар в заказе'
         verbose_name_plural = 'товары в заказе'
 
     def __str__(self):
-        return f'Заказ {self.order.pk}, {self.product} ({self.quantity} шт.)'
+        return f'Заказ {self.order.pk}, {self.product} ({self.quantity} шт.) по {self.price} руб.'

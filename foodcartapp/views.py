@@ -88,11 +88,12 @@ def register_order(request):
         last_name=serializer.validated_data_source['last_name'],
         contact_phone=serializer.validated_data_source['contact_phone'],
     )
-    for product in request.data['products']:
-        product_obj = get_object_or_404(Product, pk=product['product'])
+
+    for product in serializer.validated_data_source['products']:
         OrderProduct.objects.create(
-            product=product_obj,
+            product=product['product'],
             quantity=product['quantity'],
-            order=order
+            order=order,
+            price=product['product'].price
         )
     return Response(serializer.data)

@@ -125,6 +125,7 @@ class OrderAdmin(admin.ModelAdmin):
         'contact_phone',
     ]
     list_display = [
+        'pk',
         'address',
         'first_name',
         'last_name',
@@ -137,4 +138,13 @@ class OrderAdmin(admin.ModelAdmin):
 
 @admin.register(OrderProduct)
 class OrderProductAdmin(admin.ModelAdmin):
-    pass
+    list_display = [
+        'order_pk',
+        'product',
+        'quantity',
+        'price',
+    ]
+
+    @admin.display(description='id')
+    def order_pk(self, obj):
+        return obj.order.pk
