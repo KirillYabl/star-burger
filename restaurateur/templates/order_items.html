@@ -3,15 +3,15 @@
 {% block title %}Необработанные заказы | Star Burger{% endblock %}
 
 {% block content %}
-  <center>
-    <h2>Необработанные заказы</h2>
-  </center>
+<center>
+  <h2>Необработанные заказы</h2>
+</center>
 
-  <hr/>
-  <br/>
-  <br/>
-  <div class="container">
-   <table class="table table-responsive">
+<hr/>
+<br/>
+<br/>
+<div class="container">
+  <table class="table table-responsive">
     <tr>
       <th>ID заказа</th>
       <th>Статус</th>
@@ -20,25 +20,50 @@
       <th>Клиент</th>
       <th>Телефон</th>
       <th>Адрес доставки</th>
+      <th>Комментарий</th>
+      <th>Рестораны</th>
       <th>Ссылка на админку</th>
     </tr>
 
     {% for item in order_items %}
-      <tr>
-        <td>{{ item.pk }}</td>
-        <td>{{ item.get_status_display }}</td>
-        <td>{{ item.get_payment_type_display }}</td>
-        <td>{{ item.price }}</td>
-        <td>{{ item.client_name }}</td>
-        <td>{{ item.contact_phone }}</td>
-        <td>{{ item.address }}</td>
-        <td>
-          <a href="{% url 'admin:foodcartapp_order_change' object_id=item.pk %}?next={{ request.path|urlencode:'' }}">
-            Редактировать
-          </a>
-        </td>
-      </tr>
+    <tr>
+      <td>{{ item.pk }}</td>
+      <td>{{ item.get_status_display }}</td>
+      <td>{{ item.get_payment_type_display }}</td>
+      <td>{{ item.price }}</td>
+      <td>{{ item.client_name }}</td>
+      <td>{{ item.contact_phone }}</td>
+      <td>{{ item.address }}</td>
+      <td>{{ item.comment }}</td>
+      <td>
+        {% if item.responsible_restaurant %}
+        Готовит: {{ item.responsible_restaurant.name }}
+        {% else %}
+        {% with restaurants=item.get_available_restaurants %}
+        {% if restaurants %}
+        <details>
+          <summary>Может быть приготовлен:</summary>
+          <p>
+            <ul>
+              {% for restaurant in restaurants %}
+              <li>{{ restaurant.name }}</li>
+              {% endfor %}
+            </ul>
+          </p>
+        </details>
+        {% else %}
+        Ни один ресторан не может приготовить такой заказ
+        {% endif %}
+        {% endwith %}
+        {% endif %}
+      </td>
+      <td>
+        <a href="{% url 'admin:foodcartapp_order_change' object_id=item.pk %}?next={{ request.path|urlencode:'' }}">
+          Редактировать
+        </a>
+      </td>
+    </tr>
     {% endfor %}
-   </table>
-  </div>
+  </table>
+</div>
 {% endblock %}

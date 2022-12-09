@@ -1,6 +1,6 @@
 from django.db import models
 from django.core.validators import MinValueValidator
-from django.db.models import F, Sum
+from django.db.models import F, Sum, Count, Subquery, OuterRef, Value
 from django.utils import timezone
 from phonenumber_field.modelfields import PhoneNumberField
 
@@ -96,6 +96,11 @@ class Product(models.Model):
         return self.name
 
 
+class RestaurantMenuItemQuerySet(models.QuerySet):
+    def restaurants(self):
+        pass
+
+
 class RestaurantMenuItem(models.Model):
     restaurant = models.ForeignKey(
         Restaurant,
@@ -127,17 +132,17 @@ class RestaurantMenuItem(models.Model):
 
 
 class OrderQuerySet(models.QuerySet):
-    def price(self):
+    def with_price(self):
         return self.prefetch_related('products').annotate(price=Sum(F('products__price') * F('products__quantity')))
 
 
 class Order(models.Model):
-    CREATED = 'CREATED'
-    WAITING = 'WAITING'
-    PREPARING = 'PREPARING'
-    READY = 'READY'
-    DELIVERING = 'DELIVERING'
-    COMPLETED = 'COMPLETED'
+    CREATED = 'S10_CREATED'
+    WAITING = 'S20_WAITING'
+    PREPARING = 'S30_PREPARING'
+    READY = 'S40_READY'
+    DELIVERING = 'S50_DELIVERING'
+    COMPLETED = 'S60_COMPLETED'
     STATUS_CHOICES = [
         (CREATED, 'Создан'),
         (WAITING, 'Ожидает'),
@@ -147,9 +152,9 @@ class Order(models.Model):
         (COMPLETED, 'Выполнен'),
     ]
 
-    NOT_CHOSEN = 'NOT_CHOSEN'
-    CASH = 'CASH'
-    CREDIT_CARD = 'CREDIT_CARD'
+    NOT_CHOSEN = 'P10_NOT_CHOSEN'
+    CASH = 'P20_CASH'
+    CREDIT_CARD = 'P30_CREDIT_CARD'
     PAYMENT_CHOICES = [
         (NOT_CHOSEN, 'Не выбран'),
         (CASH, 'Налично'),
@@ -203,11 +208,32 @@ class Order(models.Model):
         choices=PAYMENT_CHOICES,
         default=NOT_CHOSEN,
     )
+    responsible_restaurant = models.ForeignKey(
+        Restaurant,
+        verbose_name='ответственный ресторан',
+        related_name='restaurant',
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+    )
     objects = OrderQuerySet.as_manager()
 
     @property
     def client_name(self):
         return f'{self.last_name} {self.first_name}'
+
+    def get_available_restaurants(self):
+        intersection = None
+        for product in self.products.all():
+            subset = {menuitem.restaurant for menuitem in product.available_restaurants() if menuitem.availability}
+            if intersection is None:
+                intersection = subset
+            elif not intersection:
+                return Restaurant.objects.none()
+            else:
+                intersection &= subset
+
+        return intersection
 
     class Meta:
         verbose_name = 'заказ'
@@ -239,6 +265,9 @@ class OrderProduct(models.Model):
         decimal_places=2,
         validators=[MinValueValidator(0)]
     )
+
+    def available_restaurants(self):
+        return self.product.menu_items.all()
 
     class Meta:
         verbose_name = 'товар в заказе'

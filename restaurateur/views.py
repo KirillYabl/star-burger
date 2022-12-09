@@ -92,6 +92,8 @@ def view_restaurants(request):
 
 @user_passes_test(is_manager, login_url='restaurateur:login')
 def view_orders(request):
+    order_items = Order.objects.prefetch_related('products__product__menu_items__restaurant').\
+        with_price().exclude(status=Order.COMPLETED).order_by('status', '-created_at')
     return render(request, template_name='order_items.html', context={
-        'order_items': Order.objects.price().exclude(status=Order.COMPLETED)
+        'order_items': order_items
     })
