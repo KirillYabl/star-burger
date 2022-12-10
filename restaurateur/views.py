@@ -8,7 +8,7 @@ from django.contrib.auth.decorators import user_passes_test
 from django.contrib.auth import authenticate, login
 from django.contrib.auth import views as auth_views
 
-from .utils import get_distance, fetch_coordinates_handled, sort_restaurants
+from .utils import get_distance, fetch_coordinates_form_db_or_api, sort_restaurants
 from foodcartapp.models import Product, Restaurant, Order
 
 
@@ -105,7 +105,7 @@ def view_orders(request):
     for order in orders:
         # find lat, lon of address in order
         if order.address not in view_address_cache:
-            coordinates = fetch_coordinates_handled(yandex_geo_apikey, order.address)
+            coordinates = fetch_coordinates_form_db_or_api(yandex_geo_apikey, order.address)
             view_address_cache[order.address] = coordinates
 
         restaurants = []
@@ -116,7 +116,7 @@ def view_orders(request):
         # find lat, lon for every available restaurant of order
         for i, restaurant in enumerate(restaurants):
             if restaurant.address not in view_address_cache:
-                coordinates = fetch_coordinates_handled(yandex_geo_apikey, restaurant.address)
+                coordinates = fetch_coordinates_form_db_or_api(yandex_geo_apikey, restaurant.address)
                 view_address_cache[restaurant.address] = coordinates
 
             restaurants[i] = {

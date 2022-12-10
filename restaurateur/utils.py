@@ -1,5 +1,8 @@
+from django.utils import timezone
 from geopy import distance
 import requests
+
+from addressesapp.models import Address
 
 
 def fetch_coordinates(apikey, address):
@@ -21,18 +24,28 @@ def fetch_coordinates(apikey, address):
     return lon, lat
 
 
-def fetch_coordinates_handled(apikey, address):
-    """Handle fetch coordinates function to useful format"""
+def fetch_coordinates_form_db_or_api(apikey, address):
+    try:
+        address_obj = Address.objects.get(address=address)
+        lat, lon = address_obj.lat, address_obj.lon
+        return lat, lon
+    except Address.DoesNotExist:
+        pass
     try:
         coordinates = fetch_coordinates(apikey, address)
     except requests.exceptions.HTTPError:
         coordinates = None
 
     # coordinates is None and both cases: unknown address and HTTPError
+    address_obj = Address(address=address, updated_at=timezone.now())
     if coordinates is None:
         lon, lat = None, None
     else:
         lon, lat = coordinates
+        address_obj.lon = lon
+        address_obj.lat = lat
+    # write even bad coordinates
+    address_obj.save()
     return lat, lon
 
 
