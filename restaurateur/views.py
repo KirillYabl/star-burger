@@ -1,4 +1,5 @@
 from django import forms
+from django.conf import settings
 from django.shortcuts import redirect, render
 from django.views import View
 from django.urls import reverse_lazy
@@ -7,7 +8,7 @@ from django.contrib.auth.decorators import user_passes_test
 from django.contrib.auth import authenticate, login
 from django.contrib.auth import views as auth_views
 
-
+from .utils import get_distance, fetch_coordinates_handled, sort_restaurants
 from foodcartapp.models import Product, Restaurant, Order
 
 
@@ -92,8 +93,44 @@ def view_restaurants(request):
 
 @user_passes_test(is_manager, login_url='restaurateur:login')
 def view_orders(request):
-    order_items = Order.objects.prefetch_related('products__product__menu_items__restaurant').\
+    yandex_geo_apikey = settings.YANDEX_GEO_APIKEY
+
+    orders = Order.objects.prefetch_related('products__product__menu_items__restaurant'). \
         with_price().exclude(status=Order.COMPLETED).order_by('status', '-created_at')
-    return render(request, template_name='order_items.html', context={
-        'order_items': order_items
-    })
+
+    # cache of addresses inside view to avoid make many queries for same restaurant
+    view_address_cache = {}
+
+    order_items = []
+    for order in orders:
+        # find lat, lon of address in order
+        if order.address not in view_address_cache:
+            coordinates = fetch_coordinates_handled(yandex_geo_apikey, order.address)
+            view_address_cache[order.address] = coordinates
+
+        restaurants = []
+        if not order.responsible_restaurant:
+            # no need to calcalute distances if has responsible restaurant
+            restaurants = order.get_available_restaurants()
+
+        # find lat, lon for every available restaurant of order
+        for i, restaurant in enumerate(restaurants):
+            if restaurant.address not in view_address_cache:
+                coordinates = fetch_coordinates_handled(yandex_geo_apikey, restaurant.address)
+                view_address_cache[restaurant.address] = coordinates
+
+            restaurants[i] = {
+                'restaurant': restaurant,
+                'distance': get_distance(view_address_cache[order.address], view_address_cache[restaurant.address])
+            }
+
+        restaurant_items = sort_restaurants(restaurants)
+
+        order_items.append(
+            {
+                'order': order,
+                'restaurants': restaurant_items
+            }
+        )
+
+    return render(request, template_name='order_items.html', context={'order_items': order_items})

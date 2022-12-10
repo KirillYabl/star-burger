@@ -223,17 +223,18 @@ class Order(models.Model):
         return f'{self.last_name} {self.first_name}'
 
     def get_available_restaurants(self):
-        intersection = None
+        restaurants = None
         for product in self.products.all():
-            subset = {menuitem.restaurant for menuitem in product.available_restaurants() if menuitem.availability}
-            if intersection is None:
-                intersection = subset
-            elif not intersection:
-                return Restaurant.objects.none()
+            product_restaurants = {menuitem.restaurant for menuitem in product.available_restaurants() if
+                                   menuitem.availability}
+            if restaurants is None:
+                restaurants = product_restaurants
+            elif not restaurants:
+                return []
             else:
-                intersection &= subset
+                restaurants &= product_restaurants
 
-        return intersection
+        return list(restaurants)
 
     class Meta:
         verbose_name = 'заказ'

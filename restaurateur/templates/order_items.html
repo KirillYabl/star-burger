@@ -27,26 +27,26 @@
 
     {% for item in order_items %}
     <tr>
-      <td>{{ item.pk }}</td>
-      <td>{{ item.get_status_display }}</td>
-      <td>{{ item.get_payment_type_display }}</td>
-      <td>{{ item.price }}</td>
-      <td>{{ item.client_name }}</td>
-      <td>{{ item.contact_phone }}</td>
-      <td>{{ item.address }}</td>
-      <td>{{ item.comment }}</td>
+      <td>{{ item.order.pk }}</td>
+      <td>{{ item.order.get_status_display }}</td>
+      <td>{{ item.order.get_payment_type_display }}</td>
+      <td>{{ item.order.price }}</td>
+      <td>{{ item.order.client_name }}</td>
+      <td>{{ item.order.contact_phone }}</td>
+      <td>{{ item.order.address }}</td>
+      <td>{{ item.order.comment }}</td>
       <td>
-        {% if item.responsible_restaurant %}
-        Готовит: {{ item.responsible_restaurant.name }}
+        {% if item.order.responsible_restaurant %}
+        Готовит: {{ item.order.responsible_restaurant.name }}
         {% else %}
-        {% with restaurants=item.get_available_restaurants %}
+        {% with restaurants=item.restaurants %}
         {% if restaurants %}
         <details>
           <summary>Может быть приготовлен:</summary>
           <p>
             <ul>
-              {% for restaurant in restaurants %}
-              <li>{{ restaurant.name }}</li>
+              {% for restaurant_item in restaurants %}
+              <li>{{ restaurant_item.restaurant.name }} ({{ restaurant_item.distance }})</li>
               {% endfor %}
             </ul>
           </p>
@@ -58,7 +58,7 @@
         {% endif %}
       </td>
       <td>
-        <a href="{% url 'admin:foodcartapp_order_change' object_id=item.pk %}?next={{ request.path|urlencode:'' }}">
+        <a href="{% url 'admin:foodcartapp_order_change' object_id=item.order.pk %}?next={{ request.path|urlencode:'' }}">
           Редактировать
         </a>
       </td>
