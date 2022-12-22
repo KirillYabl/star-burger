@@ -252,7 +252,8 @@ class OrderProduct(models.Model):
         on_delete=models.CASCADE,
     )
     quantity = models.PositiveSmallIntegerField(
-        'количество'
+        'количество',
+        validators=[MinValueValidator(1)],
     )
     order = models.ForeignKey(
         Order,
