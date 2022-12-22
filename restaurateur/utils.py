@@ -59,7 +59,7 @@ def get_distance(lat_lon_1, lat_lon_2):
 
 
 def sort_restaurants(restaurant_items):
-    very_big_distance = 10 ** 9
+    very_big_distance = 10 ** 9  # for sorting None
 
     if not restaurant_items:
         return restaurant_items
