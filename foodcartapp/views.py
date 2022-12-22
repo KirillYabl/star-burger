@@ -85,11 +85,14 @@ def register_order(request):
             contact_phone=serializer.validated_data_source['contact_phone'],
         )
 
-        for product in serializer.validated_data_source['products']:
-            OrderProduct.objects.create(
+        order_products = [
+            OrderProduct(
                 product=product['product'],
                 quantity=product['quantity'],
                 order=order,
                 price=product['product'].price
             )
+            for product in serializer.validated_data_source['products']
+        ]
+        OrderProduct.objects.bulk_create(order_products)
     return Response(serializer.data)
