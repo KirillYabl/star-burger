@@ -54,14 +54,23 @@ python -m venv venv
 pip install -r requirements.txt
 ```
 
-Определите переменные окружения `SECRET_KEY` и `YANDEX_GEO_APIKEY`.
+Определите обязательные переменные окружения `SECRET_KEY`, `YANDEX_GEO_APIKEY` и `ROLLBAR_POST_SERVER_ITEM_ACCESS_TOKEN`.
+Необязательные переменные окружения: `ROLLBAR_ENVIRONMENT_NAME`
 Создать файл `.env` в каталоге `star_burger/` и положите туда такой код:
 ```sh
 SECRET_KEY=django-insecure-0if40nf4nf93n4
 YANDEX_GEO_APIKEY=<Ваш ключ>
+ROLLBAR_POST_SERVER_ITEM_ACCESS_TOKEN=<Ваш токен>
 ```
 `YANDEX_GEO_APIKEY` - это ключ к API [Яндекс Геокодера](https://yandex.ru/dev/maps/geocoder/)
 Вы можете заполнить этот ключ фейковой строкой, но тогда сайт не будет рассчитывать расстояния между ресторанами и адресами заказа.
+
+`ROLLBAR_POST_SERVER_ITEM_ACCESS_TOKEN` - это токен для мониторинга ошибок в сервисе [Rollbar](https://rollbar.com/)
+При регистрации в [Rollbar](https://rollbar.com/) выбирайте SDK Django
+Ошибки 404 игнорируются
+Вы можете заполнить этот ключ фейковой строкой, но тогда ошибки не будут регистрироваться
+
+`ROLLBAR_ENVIRONMENT_NAME` - название топика, куда [Rollbar](https://rollbar.com/) будет складывать ошибки (по умолчанию `development`)
 
 Создайте файл базы данных SQLite и отмигрируйте её следующей командой:
 
@@ -152,6 +161,8 @@ Parcel будет следить за файлами в каталоге `bundle
 - `SECRET_KEY` — секретный ключ проекта. Он отвечает за шифрование на сайте. Например, им зашифрованы все пароли на вашем сайте.
 - `ALLOWED_HOSTS` — [см. документацию Django](https://docs.djangoproject.com/en/3.1/ref/settings/#allowed-hosts)
 - `YANDEX_GEO_APIKEY` — это ключ к API [Яндекс Геокодера](https://yandex.ru/dev/maps/geocoder/)
+- `ROLLBAR_POST_SERVER_ITEM_ACCESS_TOKEN` - токен для мониторинга ошибок в сервисе [Rollbar](https://rollbar.com/)
+- `ROLLBAR_ENVIRONMENT_NAME` - название топика, для [Rollbar](https://rollbar.com/)
 
 ## Цели проекта
 
