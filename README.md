@@ -61,6 +61,7 @@ pip install -r requirements.txt
 SECRET_KEY=django-insecure-0if40nf4nf93n4
 YANDEX_GEO_APIKEY=<Ваш ключ>
 ROLLBAR_POST_SERVER_ITEM_ACCESS_TOKEN=<Ваш токен>
+POSTGRES_DB_URL=postgres://USER:PASSWORD@HOST:PORT/NAME
 ```
 `YANDEX_GEO_APIKEY` - это ключ к API [Яндекс Геокодера](https://yandex.ru/dev/maps/geocoder/)
 Вы можете заполнить этот ключ фейковой строкой, но тогда сайт не будет рассчитывать расстояния между ресторанами и адресами заказа.
@@ -72,7 +73,15 @@ ROLLBAR_POST_SERVER_ITEM_ACCESS_TOKEN=<Ваш токен>
 
 `ROLLBAR_ENVIRONMENT_NAME` - название топика, куда [Rollbar](https://rollbar.com/) будет складывать ошибки (по умолчанию `development`)
 
-Создайте файл базы данных SQLite и отмигрируйте её следующей командой:
+`POSTGRES_DB_URL` - url строка подключения к БД postgres вида `postgres://USER:PASSWORD@HOST:PORT/NAME`
+где:
+`USER` - имя пользователя БД
+`PASSWORD` - пароль пользователя БД
+`HOST` - ip адрес сервера с БД
+`PORT` - порт сервера с БД
+`NAME` - имя БД
+
+Сделайте миграцию БД следующей командой:
 
 ```sh
 python manage.py migrate
@@ -160,6 +169,7 @@ Parcel будет следить за файлами в каталоге `bundle
 - `DEBUG` — дебаг-режим. Поставьте `False`.
 - `SECRET_KEY` — секретный ключ проекта. Он отвечает за шифрование на сайте. Например, им зашифрованы все пароли на вашем сайте.
 - `ALLOWED_HOSTS` — [см. документацию Django](https://docs.djangoproject.com/en/3.1/ref/settings/#allowed-hosts)
+- `POSTGRES_DB_URL` - url строка подключения к БД postgres вида `postgres://USER:PASSWORD@HOST:PORT/NAME`
 - `YANDEX_GEO_APIKEY` — это ключ к API [Яндекс Геокодера](https://yandex.ru/dev/maps/geocoder/)
 - `ROLLBAR_POST_SERVER_ITEM_ACCESS_TOKEN` - токен для мониторинга ошибок в сервисе [Rollbar](https://rollbar.com/)
 - `ROLLBAR_ENVIRONMENT_NAME` - название топика, для [Rollbar](https://rollbar.com/)

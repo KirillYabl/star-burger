@@ -15,6 +15,7 @@ DEBUG = env.bool('DEBUG', True)
 YANDEX_GEO_APIKEY = env.str('YANDEX_GEO_APIKEY')
 ROLLBAR_POST_SERVER_ITEM_ACCESS_TOKEN = env.str('ROLLBAR_POST_SERVER_ITEM_ACCESS_TOKEN')
 ROLLBAR_ENVIRONMENT_NAME = env.str('ROLLBAR_ENVIRONMENT_NAME', 'development')
+POSTGRES_DB_URL = env.str('POSTGRES_DB_URL')
 
 ALLOWED_HOSTS = env.list('ALLOWED_HOSTS', ['127.0.0.1', 'localhost'])
 
@@ -95,9 +96,7 @@ MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 MEDIA_URL = '/media/'
 
 DATABASES = {
-    'default': dj_database_url.config(
-        default='sqlite:////{0}'.format(os.path.join(BASE_DIR, 'db.sqlite3'))
-    )
+    'default': dj_database_url.config(default=POSTGRES_DB_URL)
 }
 
 AUTH_PASSWORD_VALIDATORS = [
