@@ -1,0 +1,6 @@
+[Timer]
+OnCalendar=*-*-01 00:00:00
+Unit=starburger-clearsessions.service
+
+[Install]
+WantedBy=multi-user.target

@@ -1,0 +1,11 @@
+[Unit]
+Requires=postgresql.service
+
+[Service]
+Type=simple
+WorkingDirectory=/opt/star-burger
+ExecStart=/opt/star-burger/venv/bin/python -m gunicorn -w 5 -b 127.0.0.1:8080 star_burger.wsgi:application
+Restart=always
+
+[Install]
+WantedBy=multi-user.target
